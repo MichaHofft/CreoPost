@@ -5,7 +5,7 @@ It does to pretend to be a full-fledged CAM post processor.
 
 # Use case
 
-* use a education version of PTC reo
+* use a education version of PTC Creo Parametric 8.0
 * create a CAM setup
 * generate one or multiple (N|A) CL files describing the machine operations
 * transform these into G-code
