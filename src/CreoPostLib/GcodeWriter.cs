@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace CreoPost
 {
+    /// <summary>
+    /// Base class for all single commands found in a G-Code file.
+    /// </summary>
     public class GcodeItemBase
     {
         public int LineNo;
@@ -52,6 +55,9 @@ namespace CreoPost
         }
     }
 
+    /// <summary>
+    /// Line with solely a comment.
+    /// </summary>
     public class GcodeItemComment : GcodeItemBase
     {
         public override void SetRaw()
@@ -65,6 +71,9 @@ namespace CreoPost
         }
     }
 
+    /// <summary>
+    /// Generic command. Simple text container.
+    /// </summary>
     public class GcodeItemGeneric : GcodeItemBase
     {
         public string Cmd = "";
@@ -81,6 +90,9 @@ namespace CreoPost
         }
     }
 
+    /// <summary>
+    /// Siwtch spindle to a certain RPM
+    /// </summary>
     public class GcodeItemSpindleRpmM3 : GcodeItemBase
     {
         public double Rpm = 0.0;
@@ -97,6 +109,9 @@ namespace CreoPost
         }
     }
 
+    /// <summary>
+    /// Swicth spindle off
+    /// </summary>
     public class GcodeItemSpindleOffM5 : GcodeItemBase
     {
         public override void SetRaw()
@@ -110,6 +125,9 @@ namespace CreoPost
         }
     }
 
+    /// <summary>
+    /// Abstract base class for a PTP motion.
+    /// </summary>
     public abstract class GcodeItemMoveAbstract : GcodeItemBase
     {
         public double? X;
@@ -117,6 +135,9 @@ namespace CreoPost
         public double? Z;
     }
 
+    /// <summary>
+    /// Command for non-linear, rapid move.
+    /// </summary>
     public class GcodeItemMoveRapidG0 : GcodeItemMoveAbstract
     {
         public GcodeItemMoveRapidG0(double? x = null, double? y = null, double? z = null, string comment = null)
@@ -137,6 +158,9 @@ namespace CreoPost
         }
     }
 
+    /// <summary>
+    /// Command for a linear move to a certain position with a certain feed rate
+    /// </summary>
     public class GcodeItemMoveLinearG1 : GcodeItemMoveAbstract
     {
         public double? Feedrate;
@@ -161,6 +185,9 @@ namespace CreoPost
         }
     }
 
+    /// <summary>
+    /// Base class for arc movements.
+    /// </summary>
     public class GcodeItemArcAbstract : GcodeItemMoveAbstract
     {
         // see: https://marlinfw.org/docs/gcode/G002-G003.html
@@ -173,6 +200,9 @@ namespace CreoPost
         public double? R;
     }
 
+    /// <summary>
+    /// Command to move arc clock-wise
+    /// </summary>
     public class GcodeItemArcClockwise : GcodeItemArcAbstract
     { 
         public override void SetRaw()
@@ -189,6 +219,9 @@ namespace CreoPost
         }
     }
 
+    /// <summary>
+    /// Command to move arc anti-clock-wise
+    /// </summary>
     public class GcodeItemArcAntiClockwise : GcodeItemArcAbstract
     {
         public override void SetRaw()
@@ -205,6 +238,10 @@ namespace CreoPost
         }
     }
 
+    /// <summary>
+    /// Class orginzes a list of commands (<c>Lines</c>), which could
+    /// be written to a file or text.
+    /// </summary>
     public class GcodeWriter
     {
         public List<GcodeItemBase> Lines = new List<GcodeItemBase>();
@@ -224,7 +261,7 @@ namespace CreoPost
             Lines.Add(item);
         }
 
-        public void WriteLines(string path)
+        public void WriteLinesToStream(StreamWriter writer)
         {
             // prepare all lines
             var lineno = 1;
@@ -235,7 +272,29 @@ namespace CreoPost
             }
 
             // write
-            System.IO.File.WriteAllLines(path, Lines.Select((ln) => ln.RawLine));
+            foreach (var tl in Lines.Select((ln) => ln.RawLine))
+                writer.WriteLine(tl);
+        }
+
+        public void WriteLinesToFile(string path)
+        {
+            using (var writer = new StreamWriter(path))
+            {
+                WriteLinesToStream(writer);
+            }
+        }
+
+        public string WriteLinesToText()
+        {
+            using (var s = new MemoryStream())
+            {
+                using (var writer = new StreamWriter(s))
+                {
+                    WriteLinesToStream(writer);
+                }
+                
+                return Encoding.ASCII.GetString(s.ToArray());
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using CreoPost;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,10 +25,13 @@ namespace CreoPostGui
     {
         protected FileSystemWatcher? _inputWatcher = null;
 
+        protected string _outputText = "";
+
         public MainWindow()
         {
             InitializeComponent();
-            Log(LogLevel.Info, "CreoPost v.0.0.0.1 (c) by Michael Hoffmeister");
+            TextBoxLog.Document.Blocks.Clear();
+            Log(LogLevel.Info, "CreoPost v.0.1 (c) by Michael Hoffmeister.");
             Log(LogLevel.Info, "Application started.");
         }
 
@@ -42,12 +46,67 @@ namespace CreoPostGui
             // read text
             try
             {
+                // read
                 var txt = await System.IO.File.ReadAllTextAsync(fn);
                 TextBoxInputContent.Text = txt;
             } 
             catch (Exception ex)
             {
-                ;
+                Log(LogLevel.Error, "Exception {0} in {1}", ex.Message, ex.StackTrace ?? "");
+            }
+        }
+
+        private void UiTransform()
+        {
+            // safe way
+            try
+            {
+                // log
+                Log(LogLevel.Info, "Parsing text file to A/BCL commands at {0}", DateTime.Now.ToShortTimeString());
+
+                // try convert into NCL lines
+                var ncl = new NclReader();
+                ncl.Log = this.Log;
+                ncl.ReadNclFromText(TextBoxInputContent.Text);
+
+                // error
+                if (ncl.ErrorNum > 0)
+                {
+                    Log(LogLevel.Error, $"There are {ncl.ErrorNum} errors. Aborting!");
+                    return;
+                }
+
+                // log
+                var startTime = DateTime.UtcNow;
+                Log(LogLevel.Info, "Starting transformation to G-Code ..");
+
+                // create G-Code
+                var gcode = new GcodeWriter();
+
+                // add header
+                GcodeTemplates.AddHeaderLikeFreeCadGrbl(gcode);
+
+                // post processor
+                var post = new PostProcNclToGcode();
+                post.Log = this.Log;
+                var res = post.NctToGcode(ncl, gcode);
+                if (!res)
+                {
+                    Log(LogLevel.Error, $"There were errors. Aborting!");
+                    return;
+                }
+                Log(LogLevel.Important, $"Transformation successfully in {(DateTime.UtcNow - startTime).TotalMilliseconds}ms.");
+
+                // footer
+                GcodeTemplates.AddFooterLikeFreeCadGrbl(gcode);
+
+                // produce output text
+                var outputText = gcode.WriteLinesToText();
+                TextBoxOutputContent.Text = outputText;
+            }
+            catch (Exception ex)
+            {
+                Log(LogLevel.Error, "Exception {0} in {1}", ex.Message, ex.StackTrace ?? "");
             }
         }
 
@@ -154,6 +213,16 @@ namespace CreoPostGui
                     UpdateInputWatcher();
                 }
             }
+
+            if (sender == ButtonLogClear)
+            {
+                TextBoxLog.Document.Blocks.Clear();
+            }
+
+            if (sender == ButtonTransform)
+            {
+                UiTransform();
+            }
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
@@ -167,8 +236,6 @@ namespace CreoPostGui
                 });
             }
         }
-
-        public enum LogLevel { Info, Important, Error }
 
         private void Log(LogLevel level, string msg, params object[] args)
         {

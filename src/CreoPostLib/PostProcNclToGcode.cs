@@ -10,10 +10,12 @@ using System.Threading.Tasks;
 namespace CreoPost
 {
     /// <summary>
-    /// This class contains post processors.
+    /// This class contains a post processor for Creo -> G-Code.
     /// </summary>
     public class PostProcNclToGcode
     {
+        public Log.LogDelegate Log = CreoPost.Log.LogToConsole;
+
         public const double FeedRateRapid = 888.0;
 
         public Vector.Pos3 CurrPos;
@@ -85,7 +87,7 @@ namespace CreoPost
                     var go2 = ncliNext as NclItemGoto;
                     if (go2 == null)
                     {
-                        System.Console.WriteLine($"Line ({circle.LineNo}) : CIRCLE command is required to be followed by GOTO. Aborting prossing!");
+                        Log?.Invoke(LogLevel.Error, $"Line ({circle.LineNo}) : CIRCLE command is required to be followed by GOTO. Aborting prossing!");
                         return false;
                     }
 
@@ -99,7 +101,7 @@ namespace CreoPost
 
                     if (!clw.HasValue)
                     {
-                        System.Console.WriteLine($"Line ({circle.LineNo}) : CIRCLE command has normal vector different to XY plane. Aborting prossing!");
+                        Log?.Invoke(LogLevel.Error, $"Line ({circle.LineNo}) : CIRCLE command has normal vector different to XY plane. Aborting prossing!");
                         return false;
                     }
 
@@ -158,7 +160,7 @@ namespace CreoPost
                     // still ok?
                     if (offIndex == -1 || err2)
                     {
-                        System.Console.WriteLine($"Line ({cycleDeep.LineNo}) : CYCLE / DEEP command parsed incorrect. Aborting prossing!");
+                        Log?.Invoke(LogLevel.Error, $"Line ({cycleDeep.LineNo}) : CYCLE / DEEP command parsed incorrect. Aborting prossing!");
                         return false;
                     }
 
@@ -172,7 +174,7 @@ namespace CreoPost
                     var deepClear = cycleDeep.Args?.GetNamedValue("CLEAR");
                     if (deepDepth == null || deepStep == null || deepMmpm == null || deepClear == null)
                     {
-                        System.Console.WriteLine($"Line ({cycleDeep.LineNo}) : CYCLE / DEEP command missing some arguments DEPTH, STEP, MMPM, CLEAR. Aborting prossing!");
+                        Log?.Invoke(LogLevel.Error, $"Line ({cycleDeep.LineNo}) : CYCLE / DEEP command missing some arguments DEPTH, STEP, MMPM, CLEAR. Aborting prossing!");
                         return false;
                     }
 

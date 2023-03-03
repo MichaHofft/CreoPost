@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CreoPost
 {
     /// <summary>
-    /// This class contains vector mathematics.
+    /// This class contains simple vector mathematics.
     /// </summary>
     public class Vector
     {

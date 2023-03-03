@@ -12,6 +12,9 @@ namespace CreoPost
     // Some ACL explanations
     // see: http://bdml.stanford.edu/twiki/pub/Manufacturing/HaasReferenceInfo/V61_GPost_CD_Manual.pdf
 
+    /// <summary>
+    /// Base class for all single commands found in a ACL/BCL file.
+    /// </summary>
     public class NclItemBase
     {
         public int LineNo;
@@ -19,60 +22,99 @@ namespace CreoPost
         public string Comment;
     }
 
+    /// <summary>
+    /// Case, if the command is unknown.
+    /// </summary>
     public class NclItemUnknown : NclItemBase
     {
     }
 
+    /// <summary>
+    /// Line codes a global constant, which would be available in <c>Globals</c>.
+    /// </summary>
     public class NclItemGlobal : NclItemBase
     {
     }
 
+    /// <summary>
+    /// Blank line
+    /// </summary>
     public class NclItemBlank : NclItemBase
     {
     }
 
+    /// <summary>
+    /// Command for loading a tool
+    /// </summary>
     public class NclItemLoadTool : NclItemBase
     {
         public int ToolNo;
     }
 
+    /// <summary>
+    /// Command for switching spindle to a specific RPM
+    /// </summary>
     public class NclItemSpindleRpm : NclItemBase
     {
         public double Rpm;
     }
 
+    /// <summary>
+    /// Command for switching spindle off
+    /// </summary>
     public class NclItemSpindleOff : NclItemBase
     {
     }
 
+    /// <summary>
+    /// Command for setting the feedrate for subsequent commands
+    /// </summary>
     public class NclItemFeedRate : NclItemBase
     {
         public double FeedRate;
         public NclUnit? Unit;
     }
 
+    /// <summary>
+    /// Command for switch to rapid movement mode for subsequent commands
+    /// </summary>
     public class NclItemRapid : NclItemBase
     {
     }
 
+    /// <summary>
+    /// End of file.
+    /// </summary>
     public class NclItemFini : NclItemBase
     {
     }
 
+    /// <summary>
+    /// Move to a 3D coordinate
+    /// </summary>
     public class NclItemGoto : NclItemBase
     {
         public double X, Y, Z;
     }
 
+    /// <summary>
+    /// Complex command including a lot of sub-movements.
+    /// </summary>
     public class NclItemCycleDeep : NclItemBase
     {
         public NclArgValueList Args = new NclArgValueList();
     }
 
+    /// <summary>
+    /// End of cycle.
+    /// </summary>
     public class NclItemCycleOff : NclItemBase
     {
     }
 
+    /// <summary>
+    /// Circle/ arc command
+    /// </summary>
     public class NclItemCircle : NclItemBase
     {
         // see: http://bdml.stanford.edu/twiki/pub/Manufacturing/HaasReferenceInfo/V61_GPost_CD_Manual.pdf
@@ -122,12 +164,19 @@ namespace CreoPost
         }
     }
 
+    /// <summary>
+    /// Some coded units.
+    /// Note: currently, unit handling is NOT fully supported.
+    /// </summary>
     public enum NclUnit { 
         MM, Inch, 
         InchPerMin, InchPerRev, SurfacefeetPerMin,
         MmPerMin, MmPerRev, SurfaceMeterPerMin
     };
 
+    /// <summary>
+    /// Global constants given by various commands.
+    /// </summary>
     public class NclGlobals
     {
         public string PartNo;
@@ -136,8 +185,13 @@ namespace CreoPost
         public NclUnit Units = NclUnit.MM;
     }
 
+    /// <summary>
+    /// Thsi class read a file/ text and holds parsed line commands.
+    /// </summary>
     public class NclReader
     {
+        public Log.LogDelegate Log = CreoPost.Log.LogToConsole;
+
         public List<NclItemBase> Lines = new List<NclItemBase>();
         
         public NclGlobals Globals = new NclGlobals();
@@ -150,7 +204,7 @@ namespace CreoPost
 
         public NclReader(string fn)
         {
-            ReadNclLines(fn);
+            ReadNclFromFile(fn);
         }
 
         public static List<double>? ParseDoubles(string ln)
@@ -383,17 +437,14 @@ namespace CreoPost
             return false;
         }
 
-        public void ReadNclLines(string fn)
+        public void ReadNclFrom(IList<string> lines)
         {
-            // first read line by line
-            var lines = System.IO.File.ReadAllLines(fn);
-
             // now join some lines
             var joined = new List<string>();
-            for (int li=0; li < lines.Length; li++)
+            for (int li=0; li < lines.Count; li++)
             {
                 var sum = lines[li].TrimEnd('$', ' ');
-                while (li < lines.Length && lines[li].TrimEnd().EndsWith("$"))
+                while (li < lines.Count && lines[li].TrimEnd().EndsWith("$"))
                 {
                     li++;
                     sum += " " + lines[li].TrimStart().TrimEnd('$', ' ');
@@ -411,11 +462,37 @@ namespace CreoPost
                 if (l is NclItemUnknown niu)
                 {
                     ErrorNum++;
-                    System.Console.WriteLine($"Unknown line ({niu.LineNo}): {niu.RawLine}");
+                    Log?.Invoke(LogLevel.Error, $"Unknown line ({niu.LineNo}): {niu.RawLine}");
                 }
 
             // ok
             ;
+        }
+
+        public void ReadNclFromFile(string fn)
+        {
+            // first read line by line
+            var lines = System.IO.File.ReadAllLines(fn);
+
+            // hand over
+            ReadNclFrom(lines);
+        }
+
+        public void ReadNclFromText(string text)
+        {
+            // first read line by line
+            string? line;
+            var lines = new List<string>();
+            using (StringReader sr = new StringReader(text))
+            {
+                while ((line = sr.ReadLine()) != null)
+                {
+                    lines.Add(line);
+                }
+            }
+
+            // hand over
+            ReadNclFrom(lines);
         }
     }
 }

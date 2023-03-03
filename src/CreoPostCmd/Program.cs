@@ -1,5 +1,11 @@
-﻿namespace CreoPost
+﻿using CreoPost;
+
+namespace CreoPost
 {
+    /// <summary>
+    /// Debug main program.
+    /// TODO: use command line arguments
+    /// </summary>
     internal class Program
     {
         static void Main(string[] args)
@@ -26,7 +32,7 @@
             else
             {
                 GcodeTemplates.AddFooterLikeFreeCadGrbl(gcode);
-                gcode.WriteLines("out.nc");
+                gcode.WriteLinesToFile("out.nc");
             }
         }
     }

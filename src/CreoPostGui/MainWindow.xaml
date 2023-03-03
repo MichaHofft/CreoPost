@@ -103,7 +103,7 @@
             Margin="1" Padding="3"
             Content=">>>"
             ToolTip="Tranform input to output"
-            />
+            Click="Button_Click" />
 
         <TextBox x:Name="TextBoxOutputContent"
             Grid.Row="3" Grid.Column="2"

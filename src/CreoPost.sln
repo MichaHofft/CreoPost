@@ -4,8 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreoPostCmd", "CreoPostCmd\CreoPostCmd.csproj", "{92FA0039-BD19-4131-9AE4-EB7BCC8072F2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0C77B516-6237-45C9-AF80-4DFD87F5CA9B} = {0C77B516-6237-45C9-AF80-4DFD87F5CA9B}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreoPostGui", "CreoPostGui\CreoPostGui.csproj", "{AB1D3760-3972-4C87-9A3D-BD918BDD277A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreoPostGui", "CreoPostGui\CreoPostGui.csproj", "{AB1D3760-3972-4C87-9A3D-BD918BDD277A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreoPostLib", "CreoPostLib\CreoPostLib.csproj", "{0C77B516-6237-45C9-AF80-4DFD87F5CA9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +26,10 @@ Global
 		{AB1D3760-3972-4C87-9A3D-BD918BDD277A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB1D3760-3972-4C87-9A3D-BD918BDD277A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB1D3760-3972-4C87-9A3D-BD918BDD277A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C77B516-6237-45C9-AF80-4DFD87F5CA9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C77B516-6237-45C9-AF80-4DFD87F5CA9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C77B516-6237-45C9-AF80-4DFD87F5CA9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C77B516-6237-45C9-AF80-4DFD87F5CA9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
