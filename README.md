@@ -1,6 +1,6 @@
 # CreoPost
 
-CreoPost is a free, very simple post processor for converting Creo CL to GRBL gcode.
+CreoPost is a free, very simple post processor for converting Creo CL to GRBL G-Code.
 It does to pretend to be a full-fledged CAM post processor.
 
 # Use case
@@ -22,3 +22,8 @@ It does to pretend to be a full-fledged CAM post processor.
 * Using a post-processor, such intermediate language can be adopted to G-Code variants understood by many different machines. 
 * Such post-processor is described here: http://bdml.stanford.edu/twiki/pub/Manufacturing/HaasReferenceInfo/V61_GPost_CD_Manual.pdf
 * Such post-processor needs specific electronic machine descriptions to tailor the G-Code dialects in a way, that the machine can safely operate. For a list see https://www.ptc.com/en/support/article/CS54723
+
+# Building
+
+* Current source code is C# for .NET 6.0 windows
+* Solution can be opened and compiled using Microsoft Visual Studio 2019 or 2022.
