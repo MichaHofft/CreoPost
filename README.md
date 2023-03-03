@@ -1,3 +1,3 @@
 # CreoPost
 
-This is a.
+This is a thing.
