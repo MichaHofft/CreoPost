@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Shell;
 
 namespace CreoPostGui
 {
@@ -103,12 +104,41 @@ namespace CreoPostGui
                 // produce output text
                 var outputText = gcode.WriteLinesToText();
                 TextBoxOutputContent.Text = outputText;
+
+                // adopt output filename?
+                if (CheckBoxOutputAutoAdaptFn.IsChecked == true)
+                {
+                    // input from left
+                    var iPath = TextBoxInputFn.Text;
+
+                    // tricky as Creo filenames have two(!) periods
+                    var oFn = System.IO.Path.GetFileName(iPath);
+                    var pPos = oFn.IndexOf('.');
+                    if (pPos >= 0)
+                        oFn = oFn.Substring(0, pPos);
+
+                    // output to right
+                    var oPath = System.IO.Path.Combine(
+                                System.IO.Path.GetDirectoryName(iPath) ?? "",
+                                oFn + ".nc");
+                    TextBoxOutputFn.Text = oPath;
+                }
+
+                // auto save?
+                if (CheckBoxOutputAutoSave.IsChecked == true)
+                {
+                    System.IO.File.WriteAllText(TextBoxOutputFn.Text, TextBoxOutputContent.Text);
+                    Log(LogLevel.Info, "Output content saved to: {0}", TextBoxOutputFn.Text);
+                }
             }
             catch (Exception ex)
             {
                 Log(LogLevel.Error, "Exception {0} in {1}", ex.Message, ex.StackTrace ?? "");
             }
         }
+
+        //--------------------------------------------------------------------------------------------
+        #region FileSystemWatcher
 
         protected void UpdateInputWatcher()
         {
@@ -185,19 +215,49 @@ namespace CreoPostGui
             }
         }
 
+        private string _watcherNotifyLastFn = "";
+        private DateTime _watcherNotifyLastTime = DateTime.UtcNow;
+
         private async void FileSystemWatcher_Notify(object sender, FileSystemEventArgs e)
         {
             if (e.ChangeType == WatcherChangeTypes.Created 
                 || e.ChangeType == WatcherChangeTypes.Changed
                 || e.ChangeType == WatcherChangeTypes.Renamed)
             {
+                // filter out multiple notifications
+                if (e.FullPath == _watcherNotifyLastFn
+                    && ((DateTime.UtcNow - _watcherNotifyLastTime).TotalMilliseconds < 1500))
+                {
+                    // to early!
+                    return;
+                }
+
+                // remember for next time
+                _watcherNotifyLastFn = e.FullPath;
+                _watcherNotifyLastTime = DateTime.UtcNow;
+
+                // wait a little bit of time because of race conditions with external (writing?) application
+                await Task.Delay(1500);
+
+                // now do!!
                 await this.Dispatcher.Invoke(async () =>
                 {
+                    Log(LogLevel.Info, "Got notification for file: {0}", e.FullPath);
+
                     await UiLoadInputAsync(e.FullPath);
+                    if (CheckBoxInputAutoTransform.IsChecked == true)
+                        UiTransform();
+
+                    // place holder
+                    await Task.Yield();
                 });
             }
         }
 
+        #endregion
+
+        //--------------------------------------------------------------------------------------------
+        #region User feedback from widgets
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
             if (sender == ButtonInputLoad)
@@ -211,6 +271,39 @@ namespace CreoPostGui
                 {
                     await UiLoadInputAsync(dlg.FileName);
                     UpdateInputWatcher();
+                }
+            }
+
+            if (sender == ButtonOutputSelect)
+            {
+                var dlg = new SaveFileDialog()
+                {
+                    Title = "Select file / path to be saved ..",
+                    Filter = "G-Code (*.nc*)|*.nc*|All files (*.*)|*.*"
+                };
+                if (true == dlg.ShowDialog())
+                {
+                    // just set field
+                    TextBoxOutputFn.Text = dlg.FileName;
+                }
+            }
+
+            if (sender == ButtonOutputSave)
+            {
+                if (TextBoxOutputFn.Text.Trim() == "(not set)")
+                {
+                    MessageBox.Show("You have to select a filename first!", "Save G-Code");
+                    return;
+                }
+
+                try
+                {
+                    System.IO.File.WriteAllText(TextBoxOutputFn.Text, TextBoxOutputContent.Text);
+                    Log(LogLevel.Info, "Output content saved to: {0}", TextBoxOutputFn.Text);
+                }
+                catch (Exception ex)
+                {
+                    Log(LogLevel.Error, $"Exception while saving output file: {ex.Message}");
                 }
             }
 
@@ -237,17 +330,142 @@ namespace CreoPostGui
             }
         }
 
+        #endregion
+
+        //--------------------------------------------------------------------------------------------
+        #region Logging
+
         private void Log(LogLevel level, string msg, params object[] args)
         {
             var st = String.Format(msg, args);
             var para = new Paragraph(new Run(st));
             para.Margin = new Thickness(0, 0, 2, 2);
             if (level == LogLevel.Important)
-                para.Background = Brushes.LightBlue;
+                para.Background = new SolidColorBrush(Color.FromRgb(0x80, 0xff, 0xdb));
             if (level == LogLevel.Error)
-                para.Background = Brushes.LightPink;
+                para.Background = new SolidColorBrush(Color.FromRgb(0xf7, 0x25, 0x85));
             TextBoxLog.Document.Blocks.Add(para);
             TextBoxLog.ScrollToEnd();
         }
+
+        #endregion
+
+        //--------------------------------------------------------------------------------------------
+        #region Drag files in
+
+        private void LabelInOut_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effects = DragDropEffects.Copy;
+            else
+                e.Effects = DragDropEffects.None;
+        }
+
+        private async void LabelInOut_Drop(object sender, DragEventArgs e)
+        {
+            // Appearantly you need to figure out if OriginalSource would have handled the Drop?
+            if (!e.Handled && e.Data.GetDataPresent(DataFormats.FileDrop, true))
+            {
+                // Note that you can have more than one file.
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                // Assuming you have one file that you care about, pass it off to whatever
+                // handling code you have defined.
+                if (files != null && files.Length > 0)
+                {
+                    string fn = files[0];
+                    try
+                    {
+                        if (sender == LabelInput)
+                        {
+                            await UiLoadInputAsync(fn);
+                            UpdateInputWatcher();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log(LogLevel.Error, $"Exception while receiving file drop to input/ output: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        //--------------------------------------------------------------------------------------------
+        # region Drag files out ..
+
+        private bool isDragging = false;
+        private Point dragStartPoint = new Point(0, 0);
+
+        private void DragSource_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            // MIHO 2020-09-14: removed this from the check below
+            //// && (Math.Abs(dragStartPoint.X) < 0.001 && Math.Abs(dragStartPoint.Y) < 0.001)
+            if (e.LeftButton == MouseButtonState.Pressed && !isDragging)
+            {
+                Point position = e.GetPosition(null);
+                if (Math.Abs(position.X - dragStartPoint.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                    Math.Abs(position.Y - dragStartPoint.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    // lock
+                    isDragging = true;
+
+                    // fail safe
+                    try
+                    {
+                        // hastily prepare temp file ..
+                        string temppath = System.IO.Path.GetTempFileName();
+
+                        if (sender == LabelInput)
+                        {
+                            temppath = temppath.Replace(".tmp", ".ncl");
+
+                            if (TextBoxInputFn.Text.Trim() != "(not set)")
+                                temppath = System.IO.Path.Combine(
+                                    System.IO.Path.GetDirectoryName(temppath) ?? "",
+                                    System.IO.Path.GetFileName(TextBoxInputFn.Text));
+
+                            System.IO.File.WriteAllText(temppath, TextBoxInputContent.Text);
+                        }
+
+                        if (sender == LabelOutput)
+                        {
+                            temppath = temppath.Replace(".tmp", ".nc");
+
+                            if (TextBoxOutputFn.Text.Trim() != "(not set)")
+                                temppath = System.IO.Path.Combine(
+                                    System.IO.Path.GetDirectoryName(temppath) ?? "",
+                                    System.IO.Path.GetFileName(TextBoxOutputFn.Text));
+
+                            System.IO.File.WriteAllText(temppath, TextBoxOutputContent.Text);
+                        }
+
+                        // Package the data
+                        DataObject data = new DataObject();
+                        data.SetFileDropList(new System.Collections.Specialized.StringCollection() { temppath });
+
+                        // Inititate the drag-and-drop operation.
+                        DragDrop.DoDragDrop(this, data, DragDropEffects.Copy | DragDropEffects.Move);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log(LogLevel.Error, $"Exception while emitting file drop from input/ output: {ex.Message}");
+                        return;
+                    }
+
+                    // unlock
+                    isDragging = false;
+                }
+            }
+        }
+
+        private void DragSource_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            dragStartPoint = e.GetPosition(null);
+        }
+
+        #endregion
+
     }
 }

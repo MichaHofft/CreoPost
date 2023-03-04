@@ -6,6 +6,14 @@
         xmlns:local="clr-namespace:CreoPostGui"
         mc:Ignorable="d"
         Title="CreoPost" Height="450" Width="800">
+    
+    <!--
+    Color: https://coolors.co/palette/f72585-b5179e-7209b7-560bad-480ca8-3a0ca3-3f37c9-4361ee-4895ef-4cc9f0
+           https://coolors.co/palette/7400b8-6930c3-5e60ce-5390d9-4ea8de-48bfe3-56cfe1-64dfdf-72efdd-80ffdb
+    very light: #b8eaf9
+    text: #0a5c76
+    -->
+    
     <Grid x:Name="GridOuter">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -20,7 +28,7 @@
 
         <Label Grid.Row="0" Grid.Column="0"
                Content="CreoPost is a free, very simple post processor for converting Creo CL to GRBL gcode."
-               Foreground="Blue" FontSize="12" FontWeight="Bold"/>
+               Foreground="#3A0CA3" FontSize="12" FontWeight="Bold"/>
 
         <Grid x:Name="GridInputOutput"
             Grid.Row="1" Grid.Column="0">
@@ -45,17 +53,26 @@
                       ResizeBehavior="PreviousAndNext" 
                       Width="4" Background="White"/>
 
-            <Label Grid.Row="0" Grid.Column="0"
-                 Background="DarkGray" Foreground="White"
-                 Content="Input" Margin="1"
-                 FontSize="12" HorizontalContentAlignment="Center"
-                 VerticalContentAlignment="Center"/>
+            <Label x:Name="LabelInput"  
+                Grid.Row="0" Grid.Column="0"
+                Background="DarkGray" Foreground="White"
+                Content="Input (drag'n'drop files here!)" Margin="1"
+                FontSize="12" HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                AllowDrop="True" 
+                DragEnter="LabelInOut_DragEnter"
+                Drop="LabelInOut_Drop"
+                PreviewMouseLeftButtonDown="DragSource_PreviewMouseLeftButtonDown"
+                PreviewMouseMove="DragSource_PreviewMouseMove"/>
 
-            <Label Grid.Row="0" Grid.Column="2"
-                     Background="DarkGray" Foreground="White"
-                     Content="Output" Margin="1"    
-                     HorizontalContentAlignment="Center"
-                     FontSize="12" />
+            <Label x:Name="LabelOutput"
+                Grid.Row="0" Grid.Column="2"
+                Background="DarkGray" Foreground="White"
+                Content="Output (drag files out!)" Margin="1"    
+                HorizontalContentAlignment="Center"
+                FontSize="12"
+                PreviewMouseLeftButtonDown="DragSource_PreviewMouseLeftButtonDown"
+                PreviewMouseMove="DragSource_PreviewMouseMove"/>
 
             <Grid Grid.Row="1" Grid.Column="0">
                 <Grid.RowDefinitions>
@@ -100,12 +117,14 @@
                 <Button x:Name="ButtonOutputSelect"
                     Grid.Row="0" Grid.Column="1"                    
                     Content="Select ..."
-                    Margin="1"/>
+                    Margin="1"
+                    Click="Button_Click"/>
 
                 <Button x:Name="ButtonOutputSave"
                     Grid.Row="0" Grid.Column="2"
                     Content="Save"
-                    Margin="1" />
+                    Margin="1"
+                    Click="Button_Click"/>
             </Grid>
 
             <Grid Grid.Row="2" Grid.Column="0">
@@ -119,7 +138,7 @@
                 Margin="1"
                 HorizontalScrollBarVisibility="Visible"
                 VerticalScrollBarVisibility="Visible"
-                Background="LightBlue" />
+                Background="#48bfe3"/>
 
                 <Button x:Name="ButtonTransform"
                 Grid.Row="0" Grid.Column="1"
@@ -135,7 +154,7 @@
                 Margin="1"
                 HorizontalScrollBarVisibility="Visible"
                 VerticalScrollBarVisibility="Visible"
-                Background="LightBlue" />
+                Background="#64dfdf" />
 
             <WrapPanel Grid.Row="3" Grid.Column="0">
                 <CheckBox x:Name="CheckBoxInputAutoUpdateFile"
@@ -161,6 +180,11 @@
                     Margin="0, 2, 10, 2"                
                     Content="auto adapt filename"
                     IsChecked="true"/>
+
+                <CheckBox x:Name="CheckBoxOutputAutoSave"
+                    Margin="0, 2, 10, 2"                
+                    Content="auto save"
+                    IsChecked="false"/>
             </WrapPanel>
 
         </Grid>
