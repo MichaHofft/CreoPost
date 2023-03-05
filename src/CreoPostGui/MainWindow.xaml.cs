@@ -1,5 +1,6 @@
 ﻿using CreoPost;
 using Microsoft.Win32;
+using PastebinAPI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,6 +25,9 @@ namespace CreoPostGui
     /// </summary>
     public partial class MainWindow : Window
     {
+        //--------------------------------------------------------------------------------------------
+        #region Members
+
         // start with default options
         protected Options _options = new Options();
 
@@ -31,10 +35,20 @@ namespace CreoPostGui
 
         protected string _outputText = "";
 
+        #endregion
+
+        //--------------------------------------------------------------------------------------------
+        #region Window object
+
         public MainWindow()
         {
             InitializeComponent();            
         }
+
+        #endregion
+
+        //--------------------------------------------------------------------------------------------
+        #region User Workflows
 
         private async Task UiLoadInputAsync(string fn)
         {
@@ -136,6 +150,8 @@ namespace CreoPostGui
                 Log(LogLevel.Error, "Exception {0} in {1}", ex.Message, ex.StackTrace ?? "");
             }
         }
+
+        #endregion
 
         //--------------------------------------------------------------------------------------------
         #region FileSystemWatcher
@@ -286,6 +302,14 @@ namespace CreoPostGui
                     // just set field
                     TextBoxOutputFn.Text = dlg.FileName;
                 }
+            }
+
+            if (sender == ButtonOutputPasteBin)
+            {
+                await TryPasteBin(
+                    _options, 
+                    searchTitle: TextBoxPasteBinTitle.Text,
+                    code: TextBoxOutputContent.Text);
             }
 
             if (sender == ButtonOutputSave)
@@ -478,7 +502,9 @@ namespace CreoPostGui
             CheckBoxOutputAutoAdaptFn.IsChecked = opt.AutoAdaptFilename;
             CheckBoxOutputAutoSave.IsChecked = opt.AutoSave;
             CheckBoxOutputAutoPasteBin.IsChecked = opt.AutoPasteBin;
-            TextBoxPasteBinId.Text = opt.PasteBinId;
+            TextBoxInputFn.Text = opt.InputFilename;
+            TextBoxOutputFn.Text = opt.OutputFilename;
+            TextBoxPasteBinTitle.Text = opt.PasteBinTitle;
         }
 
         protected void OptionsFromUi(Options opt)
@@ -489,7 +515,9 @@ namespace CreoPostGui
             opt.AutoAdaptFilename = CheckBoxOutputAutoAdaptFn.IsChecked == true ;
             opt.AutoSave = CheckBoxOutputAutoSave.IsChecked == true ;
             opt.AutoPasteBin = CheckBoxOutputAutoPasteBin.IsChecked == true;
-            opt.PasteBinId = TextBoxPasteBinId.Text;
+            opt.OutputFilename = TextBoxOutputFn.Text;
+            opt.InputFilename = TextBoxInputFn.Text ;
+            opt.PasteBinTitle = TextBoxPasteBinTitle.Text;
         }
 
         #endregion
@@ -544,6 +572,61 @@ namespace CreoPostGui
 
             // let close
             e.Cancel = false;
+        }
+
+        #endregion
+
+        //--------------------------------------------------------------------------------------------
+        #region Paste Bin
+
+        public async Task TryPasteBin(Options options, string searchTitle, string code)
+        {
+            // see: https://github.com/nikibobi/pastebin-csharp
+
+            // access
+            searchTitle = "" + searchTitle?.Trim();
+            if (searchTitle.Length < 1)
+            {
+                Log(LogLevel.Error, "Title for PasteBin needs to be given. Aborting!");
+            }
+
+            //before using any class in the api you must enter your api dev key
+            Pastebin.DevKey = "" + options.PasteBinDeveloperKey;
+
+            try
+            {
+                // login and get user object
+                User me = await Pastebin.LoginAsync(
+                    "" + options.PasteBinUserName, 
+                    "" + options.PasteBinPassword);
+
+                // user contains information like e-mail, location etc...
+                Log(LogLevel.Info, "Logged into PasteBin as {0} {1} {2}", me, me.Email, me.Location);
+
+                // deletes all pastes with a title ..
+                foreach (Paste paste in await me.ListPastesAsync(199)) 
+                {
+                    if (paste.Title.Equals(
+                        searchTitle, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        await me.DeletePasteAsync(paste);
+                    }
+                }
+
+                // ok, add new
+                var res = await me.CreatePasteAsync(
+                    text: "" + code,
+                    title: searchTitle,
+                    visibility: PastebinAPI.Visibility.Unlisted);
+
+                // ok!
+                Log(LogLevel.Important, "Paste with title {0} posted as {1}.", searchTitle, res.Key);
+                Log(LogLevel.Info, "You can access it via: https://pastebin.com/raw/{0}", res.Key);
+            }
+            catch (Exception ex) //api throws PastebinException
+            {
+                Log(LogLevel.Error, "Exception {0} in {1}", ex.Message, ex.StackTrace ?? "");
+            }
         }
 
         #endregion

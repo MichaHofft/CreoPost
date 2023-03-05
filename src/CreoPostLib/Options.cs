@@ -60,10 +60,41 @@ namespace CreoPost
         public bool AutoPasteBin = false;
 
         /// <summary>
-        /// Id for accessing the PasteBin. Typically 8 characters.
+        /// Filename (incl. path) of the input content (to be loaded).
+        /// </summary>
+        public string InputFilename = "";
+
+        /// <summary>
+        /// Filename (incl. path) of the output content (to be saved).
+        /// </summary>
+        public string OutputFilename = "";
+
+        /// <summary>
+        /// Title for accessing the PasteBin. 
+        /// The programm will delete all pastes from the user with this title and 
+        /// will add a new one (as re-editing a paste with given id is NOT possible 
+        /// by API).
         /// Will form a raw url: https://pastebin.com/raw/{id}
         /// </summary>
-        public string PasteBinId = "";
+        public string PasteBinTitle = "";
+
+        /// <summary>
+        /// Developer key for using the PasteBin API.
+        /// see: https://pastebin.com/doc_api#1
+        /// </summary>
+        public string PasteBinDeveloperKey = "";
+
+        /// <summary>
+        /// User name for PasteBin.
+        /// </summary>
+        public string PasteBinUserName = "";
+
+        /// <summary>
+        /// Password for PasteBin.
+        /// Note: as this is NOT encrypted in options, only use PasteBin accounts which
+        /// might be compromised.
+        /// </summary>
+        public string PasteBinPassword = "";
 
         //
         // Functionality
