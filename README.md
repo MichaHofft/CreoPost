@@ -3,6 +3,8 @@
 CreoPost is a free, very simple post processor for converting Creo CL to GRBL G-Code.
 It does to pretend to be a full-fledged CAM post processor.
 
+![screenshot](https://raw.githubusercontent.com/MichaHofft/CreoPost/main/media/screen-01.png)
+
 # Use case
 
 * use a education version of PTC Creo Parametric 8.0
