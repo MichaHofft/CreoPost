@@ -29,3 +29,8 @@ It does to pretend to be a full-fledged CAM post processor.
 
 * Current source code is C# for .NET 6.0 windows
 * Solution can be opened and compiled using Microsoft Visual Studio 2019 or 2022.
+
+# Dependencies
+
+* Newtonsoft.JSON for dealing with JSON option file
+* https://github.com/nikibobi/pastebin-csharp for posting PasteBins
