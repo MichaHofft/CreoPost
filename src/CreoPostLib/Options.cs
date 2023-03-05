@@ -60,6 +60,11 @@ namespace CreoPost
         public bool AutoPasteBin = false;
 
         /// <summary>
+        /// If true will use the proxy setting listed below.
+        /// </summary>
+        public bool UseProxy = false;
+
+        /// <summary>
         /// Filename (incl. path) of the input content (to be loaded).
         /// </summary>
         public string InputFilename = "";
@@ -95,6 +100,22 @@ namespace CreoPost
         /// might be compromised.
         /// </summary>
         public string PasteBinPassword = "";
+
+        /// <summary>
+        /// Proxy server and port joined by ':'
+        /// </summary>
+        public string ProxyUrl = "";
+
+        /// <summary>
+        /// If set, will even set user/ password for proxies
+        /// </summary>
+        public string ProxyUsername = "";
+
+        /// <summary>
+        /// If set, will even set user/ password for proxies
+        /// Note: as this is NOT encrypted in options, use with care.
+        /// </summary>
+        public string ProxyPassword = "";
 
         //
         // Functionality

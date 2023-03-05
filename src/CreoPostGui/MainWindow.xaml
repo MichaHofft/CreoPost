@@ -225,7 +225,13 @@
                             Width="100"
                             Margin="0, 2, 10, 2" />
                     </StackPanel>
-                    
+
+                    <CheckBox x:Name="CheckBoxOutputUseProxy"
+                        VerticalContentAlignment="Center"
+                        Margin="0, 2, 10, 2"                
+                        Content="use proxy"
+                        IsChecked="false"/>
+
                 </WrapPanel>
 
             </Grid>

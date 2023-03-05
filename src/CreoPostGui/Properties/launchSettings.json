@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "CreoPostGui": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "HTTP_PROXY": "http://proxyads.h-ka.de",
+        "HTTPS_PROXY": "http://proxyads.h-ka.de"
+      }
+    }
+  }
+}

@@ -23,13 +23,11 @@ namespace CreoPost
         /// </summary>
         public static void AddHeaderLikeFreeCadGrbl(GcodeWriter writer)
         {
-            writer.AddComment("Exported by FreeCAD");
+            writer.AddComment("Header structure taken from FreeCAD");
             writer.AddComment("Post Processor: grbl_G81_post");
-            writer.AddComment("Output Time: 2020 - 11 - 11 19:11:33.165853");
             writer.AddComment("begin preamble");
-            writer.AddGeneric("G17", "Draw Arcs in the XY plane, default.");
-            writer.AddGeneric("G90", "All distances and positions are absolute values from the current origin.");
-            writer.AddGeneric("G21", "All distances and positions are in mm");
+            writer.AddGeneric("G17 G90", "Arcs in the XY plane. Absolute values.");
+            writer.AddGeneric("G21", "Values in mm");
             writer.AddComment("begin operation: Default Tool");
             writer.AddComment("Path: Default Tool");
             writer.AddComment("Default Tool");
@@ -41,10 +39,7 @@ namespace CreoPost
             writer.AddComment("Path: Drilling");
             writer.AddComment("Drilling");
             writer.AddComment("Begin Drilling");
-            writer.AddGeneric("(G0 Z2.000)", "A rapid positioning move at the Rapid Feed Rate.");
-            writer.AddGeneric("G90", "All distances and positions are absolute values from the current origin.");
-            writer.AddGeneric("(G98)", "Switch on negative soft stops??");
-            writer.AddComment("Drilling command: G83 X10.000 Y2.500 Z - 11.000 F30.00 Q2.000 R2.000");
+            writer.AddComment("Drilling example: G83 X10.000 Y2.500 Z - 11.000 F30.00 Q2.000 R2.000");
         }
 
         // <summary>

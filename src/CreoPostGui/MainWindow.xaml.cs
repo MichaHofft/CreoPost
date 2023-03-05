@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -309,7 +311,8 @@ namespace CreoPostGui
                 await TryPasteBin(
                     _options, 
                     searchTitle: TextBoxPasteBinTitle.Text,
-                    code: TextBoxOutputContent.Text);
+                    code: TextBoxOutputContent.Text,
+                    useProxy: CheckBoxOutputUseProxy.IsChecked == true);
             }
 
             if (sender == ButtonOutputSave)
@@ -502,6 +505,7 @@ namespace CreoPostGui
             CheckBoxOutputAutoAdaptFn.IsChecked = opt.AutoAdaptFilename;
             CheckBoxOutputAutoSave.IsChecked = opt.AutoSave;
             CheckBoxOutputAutoPasteBin.IsChecked = opt.AutoPasteBin;
+            CheckBoxOutputUseProxy.IsChecked = opt.UseProxy;
             TextBoxInputFn.Text = opt.InputFilename;
             TextBoxOutputFn.Text = opt.OutputFilename;
             TextBoxPasteBinTitle.Text = opt.PasteBinTitle;
@@ -515,6 +519,7 @@ namespace CreoPostGui
             opt.AutoAdaptFilename = CheckBoxOutputAutoAdaptFn.IsChecked == true ;
             opt.AutoSave = CheckBoxOutputAutoSave.IsChecked == true ;
             opt.AutoPasteBin = CheckBoxOutputAutoPasteBin.IsChecked == true;
+            opt.UseProxy = CheckBoxOutputUseProxy.IsChecked == true ;
             opt.OutputFilename = TextBoxOutputFn.Text;
             opt.InputFilename = TextBoxInputFn.Text ;
             opt.PasteBinTitle = TextBoxPasteBinTitle.Text;
@@ -525,7 +530,7 @@ namespace CreoPostGui
         //--------------------------------------------------------------------------------------------
         #region Window Loaded and Exit
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // final preparation
             TextBoxLog.Document.Blocks.Clear();
@@ -552,6 +557,14 @@ namespace CreoPostGui
 
             // set actual options
             OptionsToUi(_options);
+
+            // already trigger something?
+            UpdateInputWatcher();
+            if (TextBoxInputFn.Text.Trim() != "")
+            {
+                await UiLoadInputAsync(TextBoxInputFn.Text);
+                UiTransform();
+            }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -579,10 +592,30 @@ namespace CreoPostGui
         //--------------------------------------------------------------------------------------------
         #region Paste Bin
 
-        public async Task TryPasteBin(Options options, string searchTitle, string code)
+        public async Task TryPasteBin(Options options, string searchTitle, string code, bool useProxy)
         {
             // see: https://github.com/nikibobi/pastebin-csharp
 
+            // proxy?
+            if (useProxy)
+            {
+                var proxy = new WebProxy
+                {
+                    Address = new Uri(options.ProxyUrl),
+                    BypassProxyOnLocal = false,
+                    UseDefaultCredentials = false
+                };
+
+                // Proxy credentials
+                if (options.ProxyUsername != "")
+                    proxy.Credentials = new NetworkCredential(
+                        userName: options.ProxyUsername,
+                        password: options.ProxyPassword);
+
+                // set static variable
+                HttpClient.DefaultProxy = proxy;
+            }
+           
             // access
             searchTitle = "" + searchTitle?.Trim();
             if (searchTitle.Length < 1)
@@ -598,7 +631,7 @@ namespace CreoPostGui
                 // login and get user object
                 User me = await Pastebin.LoginAsync(
                     "" + options.PasteBinUserName, 
-                    "" + options.PasteBinPassword);
+                    "" + options.PasteBinPassword);                
 
                 // user contains information like e-mail, location etc...
                 Log(LogLevel.Info, "Logged into PasteBin as {0} {1} {2}", me, me.Email, me.Location);
