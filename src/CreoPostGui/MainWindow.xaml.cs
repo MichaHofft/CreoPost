@@ -599,6 +599,9 @@ namespace CreoPostGui
             // proxy?
             if (useProxy)
             {
+                // see: https://www.scrapingbee.com/blog/csharp-httpclient-proxy/
+                // see: https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.defaultproxy?view=net-7.0
+
                 var proxy = new WebProxy
                 {
                     Address = new Uri(options.ProxyUrl),
