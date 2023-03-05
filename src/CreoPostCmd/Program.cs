@@ -10,9 +10,21 @@ namespace CreoPost
     {
         static void Main(string[] args)
         {
-            // var ncl = new NclReader(@"L:\Creo-8\CNC3018\profilfräsen_2.ncl.2");
-            // var ncl = new NclReader(@"L:\Creo-8\CNC3018\schruppen_1.ncl.1");
-            var ncl = new NclReader(@"L:\Creo-8\CNC3018\bohren_1.ncl.8");
+            // strictly require 2 parameters
+            if (args.Length != 2)
+            {
+                System.Console.WriteLine(Options.PrgVersionAndCredits);
+                System.Console.WriteLine("Usage: CreoPostCmd <input .ncl file> <output .nc file>");
+                System.Console.WriteLine("Parameters missing. Aborting!");
+                Environment.Exit(-1);
+            }
+
+            var inFn = args[0];
+            var outFn = args[1];
+
+            // L:\Creo-8\CNC3018\bohren_2.ncl.1
+
+            var ncl = new NclReader(inFn);
 
             if (ncl.ErrorNum > 0)
             {
@@ -32,7 +44,7 @@ namespace CreoPost
             else
             {
                 GcodeTemplates.AddFooterLikeFreeCadGrbl(gcode);
-                gcode.WriteLinesToFile("out.nc");
+                gcode.WriteLinesToFile(outFn);
             }
         }
     }

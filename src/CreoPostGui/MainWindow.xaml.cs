@@ -32,7 +32,7 @@ namespace CreoPostGui
         {
             InitializeComponent();
             TextBoxLog.Document.Blocks.Clear();
-            Log(LogLevel.Info, "CreoPost v.0.1 (c) by Michael Hoffmeister.");
+            Log(LogLevel.Info, Options.PrgVersionAndCredits);
             Log(LogLevel.Info, "Application started.");
         }
 

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CreoPostCmd": {
+      "commandName": "Project",
+      "commandLineArgs": "L:\\Creo-8\\CNC3018\\bohren_2.ncl.1 L:\\Creo-8\\CNC3018\\out.nc"
+    }
+  }
+}

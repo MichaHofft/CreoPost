@@ -16,9 +16,8 @@
     
     <Grid x:Name="GridOuter">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="1*"/>
-            <RowDefinition Height="18"/>
+            <RowDefinition Height="6"/>
             <RowDefinition Height="80"/>
         </Grid.RowDefinitions>
 
@@ -26,191 +25,222 @@
             <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0"
-               Content="CreoPost is a free, very simple post processor for converting Creo CL to GRBL gcode."
-               Foreground="#3A0CA3" FontSize="12" FontWeight="Bold"/>
-
-        <Grid x:Name="GridInputOutput"
-            Grid.Row="1" Grid.Column="0">
+        <Grid Grid.Row="0" Grid.Column="0">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="1*"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
-            <GridSplitter 
-                      VerticalAlignment="Stretch"
-                      Grid.Column="1" 
-                      Grid.Row="0" Grid.RowSpan="4"
-                      ResizeBehavior="PreviousAndNext" 
-                      Width="4" Background="White"/>
+            <Label Grid.Row="0" Grid.Column="0"
+               Content="CreoPost is a free, very simple post processor for converting Creo CL to GRBL gcode."
+               Foreground="#3A0CA3" FontSize="12" FontWeight="Bold"/>
 
-            <Label x:Name="LabelInput"  
-                Grid.Row="0" Grid.Column="0"
-                Background="DarkGray" Foreground="White"
-                Content="Input (drag'n'drop files here!)" Margin="1"
-                FontSize="12" HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center"
-                AllowDrop="True" 
-                DragEnter="LabelInOut_DragEnter"
-                Drop="LabelInOut_Drop"
-                PreviewMouseLeftButtonDown="DragSource_PreviewMouseLeftButtonDown"
-                PreviewMouseMove="DragSource_PreviewMouseMove"/>
+            <Grid x:Name="GridInputOutput"
+                Grid.Row="1" Grid.Column="0">
 
-            <Label x:Name="LabelOutput"
-                Grid.Row="0" Grid.Column="2"
-                Background="DarkGray" Foreground="White"
-                Content="Output (drag files out!)" Margin="1"    
-                HorizontalContentAlignment="Center"
-                FontSize="12"
-                PreviewMouseLeftButtonDown="DragSource_PreviewMouseLeftButtonDown"
-                PreviewMouseMove="DragSource_PreviewMouseMove"/>
-
-            <Grid Grid.Row="1" Grid.Column="0">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="1*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <TextBox x:Name="TextBoxInputFn"
-                    Grid.Row="0" Grid.Column="0"
-                    Margin="1"
-                    Text="(not set)" />
-
-                <Button x:Name="ButtonInputLoad"
-                    Content="Load ..."
-                    Margin="1"
-                    Grid.Row="0" Grid.Column="1"
-                    Click="Button_Click"/>
-
-            </Grid>
-
-            <Grid Grid.Row="1" Grid.Column="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBox x:Name="TextBoxOutputFn"
+                <GridSplitter 
+                          VerticalAlignment="Stretch"
+                          Grid.Column="1" 
+                          Grid.Row="0" Grid.RowSpan="4"
+                          ResizeBehavior="PreviousAndNext" 
+                          Width="5" Background="#f0f0f0"/>
+
+                <Label x:Name="LabelInput"  
                     Grid.Row="0" Grid.Column="0"
-                    Margin="1"
-                    Text="(not set)" />
+                    Background="DarkGray" Foreground="White"
+                    Content="Input (drag'n'drop files here!)" Margin="1"
+                    FontSize="12" HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    AllowDrop="True" 
+                    DragEnter="LabelInOut_DragEnter"
+                    Drop="LabelInOut_Drop"
+                    PreviewMouseLeftButtonDown="DragSource_PreviewMouseLeftButtonDown"
+                    PreviewMouseMove="DragSource_PreviewMouseMove"/>
 
-                <Button x:Name="ButtonOutputSelect"
-                    Grid.Row="0" Grid.Column="1"                    
-                    Content="Select ..."
-                    Margin="1"
-                    Click="Button_Click"/>
-
-                <Button x:Name="ButtonOutputSave"
+                <Label x:Name="LabelOutput"
                     Grid.Row="0" Grid.Column="2"
-                    Content="Save"
+                    Background="DarkGray" Foreground="White"
+                    Content="Output (drag files out!)" Margin="1"    
+                    HorizontalContentAlignment="Center"
+                    FontSize="12"
+                    PreviewMouseLeftButtonDown="DragSource_PreviewMouseLeftButtonDown"
+                    PreviewMouseMove="DragSource_PreviewMouseMove"/>
+
+                <Grid Grid.Row="1" Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="TextBoxInputFn"
+                        Grid.Row="0" Grid.Column="0"
+                        Margin="1"
+                        Text="(not set)" />
+
+                    <Button x:Name="ButtonInputLoad"
+                        Content="Load ..."
+                        Margin="1"
+                        Grid.Row="0" Grid.Column="1"
+                        Click="Button_Click"/>
+
+                </Grid>
+
+                <Grid Grid.Row="1" Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="TextBoxOutputFn"
+                        Grid.Row="0" Grid.Column="0"
+                        Margin="1"
+                        Text="(not set)" />
+
+                    <Button x:Name="ButtonOutputSelect"
+                        Grid.Row="0" Grid.Column="1"                    
+                        Content="Select ..."
+                        Margin="1"
+                        Click="Button_Click"/>
+
+                    <Button x:Name="ButtonOutputSave"
+                        Grid.Row="0" Grid.Column="2"
+                        Content="Save"
+                        Margin="1"
+                        Click="Button_Click"/>
+                </Grid>
+
+                <Grid Grid.Row="2" Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="TextBoxInputContent"            
+                    Grid.Row="0" Grid.Column="0"
                     Margin="1"
-                    Click="Button_Click"/>
+                    HorizontalScrollBarVisibility="Visible"
+                    VerticalScrollBarVisibility="Visible"
+                    Background="#48bfe3"/>
+
+                    <Button x:Name="ButtonTransform"
+                    Grid.Row="0" Grid.Column="1"
+                    Margin="1" Padding="3"
+                    Content=">>>"
+                    ToolTip="Tranform input to output"
+                    Click="Button_Click" />
+
+                </Grid>
+
+                <TextBox x:Name="TextBoxOutputContent"
+                    Grid.Row="2" Grid.Column="2"
+                    Margin="1"
+                    HorizontalScrollBarVisibility="Visible"
+                    VerticalScrollBarVisibility="Visible"
+                    Background="#64dfdf" />
+
+                <WrapPanel Grid.Row="3" Grid.Column="0">
+                    <CheckBox x:Name="CheckBoxInputAutoUpdateFile"
+                        Margin="0, 2, 10, 2"                
+                        Content="auto update file"
+                        IsChecked="true"
+                        Checked="CheckBox_Checked"
+                        Unchecked="CheckBox_Checked"/>
+                    <CheckBox x:Name="CheckBoxInputAutoUpdateDir"
+                        Margin="0, 2, 10, 2"
+                        Content="auto load from same directory"
+                        IsChecked="false"
+                        Checked="CheckBox_Checked"
+                        Unchecked="CheckBox_Checked"/>
+                    <CheckBox x:Name="CheckBoxInputAutoTransform"
+                        Margin="0, 2, 10, 2"
+                        Content="auto transform"
+                        IsChecked="false" />
+                </WrapPanel>
+
+                <WrapPanel Grid.Row="3" Grid.Column="2">
+                    <CheckBox x:Name="CheckBoxOutputAutoAdaptFn"
+                        Margin="0, 2, 10, 2"                
+                        Content="auto adapt filename"
+                        IsChecked="true"/>
+
+                    <CheckBox x:Name="CheckBoxOutputAutoSave"
+                        Margin="0, 2, 10, 2"                
+                        Content="auto save"
+                        IsChecked="false"/>
+                </WrapPanel>
+
             </Grid>
-
-            <Grid Grid.Row="2" Grid.Column="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <TextBox x:Name="TextBoxInputContent"            
-                Grid.Row="0" Grid.Column="0"
-                Margin="1"
-                HorizontalScrollBarVisibility="Visible"
-                VerticalScrollBarVisibility="Visible"
-                Background="#48bfe3"/>
-
-                <Button x:Name="ButtonTransform"
-                Grid.Row="0" Grid.Column="1"
-                Margin="1" Padding="3"
-                Content=">>>"
-                ToolTip="Tranform input to output"
-                Click="Button_Click" />
-
-            </Grid>
-
-            <TextBox x:Name="TextBoxOutputContent"
-                Grid.Row="2" Grid.Column="2"
-                Margin="1"
-                HorizontalScrollBarVisibility="Visible"
-                VerticalScrollBarVisibility="Visible"
-                Background="#64dfdf" />
-
-            <WrapPanel Grid.Row="3" Grid.Column="0">
-                <CheckBox x:Name="CheckBoxInputAutoUpdateFile"
-                    Margin="0, 2, 10, 2"                
-                    Content="auto update file"
-                    IsChecked="true"
-                    Checked="CheckBox_Checked"
-                    Unchecked="CheckBox_Checked"/>
-                <CheckBox x:Name="CheckBoxInputAutoUpdateDir"
-                    Margin="0, 2, 10, 2"
-                    Content="auto load from same directory"
-                    IsChecked="false"
-                    Checked="CheckBox_Checked"
-                    Unchecked="CheckBox_Checked"/>
-                <CheckBox x:Name="CheckBoxInputAutoTransform"
-                    Margin="0, 2, 10, 2"
-                    Content="auto transform"
-                    IsChecked="false" />
-            </WrapPanel>
-
-            <WrapPanel Grid.Row="3" Grid.Column="2">
-                <CheckBox x:Name="CheckBoxOutputAutoAdaptFn"
-                    Margin="0, 2, 10, 2"                
-                    Content="auto adapt filename"
-                    IsChecked="true"/>
-
-                <CheckBox x:Name="CheckBoxOutputAutoSave"
-                    Margin="0, 2, 10, 2"                
-                    Content="auto save"
-                    IsChecked="false"/>
-            </WrapPanel>
 
         </Grid>
 
-        <DockPanel Grid.Row="2" Grid.Column="0">
+        <GridSplitter 
+            HorizontalAlignment="Stretch"
+            Grid.Column="0" 
+            Grid.Row="1" 
+            ResizeBehavior="PreviousAndNext" 
+            Height="4" Background="#f0f0f0"/>
 
-            <Button x:Name="ButtonLogClear"
-            DockPanel.Dock="Right"
-            Content="Clear"
-            Padding="0,-2,0,0"
-            Margin="1"
-            HorizontalAlignment="Right"
-            Click="Button_Click"/>
+        <Grid Grid.Row="2" Grid.Column="0">
+            
+            <Grid.RowDefinitions>
+                <RowDefinition Height="18"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
 
-            <TextBlock 
-            Margin="1"
-            Text="Log:"/>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
 
-        </DockPanel>
+            <DockPanel Grid.Row="0" Grid.Column="0">
 
-        <RichTextBox x:Name="TextBoxLog"
-            Grid.Row="3" Grid.Column="0"
-            Margin="1"
-            IsReadOnly="true"
-            VerticalScrollBarVisibility="Visible"
-            Background="White"
-            />
+                <Button x:Name="ButtonLogClear"
+                DockPanel.Dock="Right"
+                Content="Clear"
+                Padding="0,-2,0,0"
+                Margin="1"
+                HorizontalAlignment="Right"
+                Click="Button_Click"/>
+
+                <TextBlock 
+                Margin="1"
+                Text="Log:"/>
+            </DockPanel>
+        
+            <RichTextBox x:Name="TextBoxLog"
+                Grid.Row="1" Grid.Column="0"
+                Margin="1"
+                IsReadOnly="true"
+                VerticalScrollBarVisibility="Visible"
+                Background="White" />
+
+        </Grid>
     </Grid>
 </Window>

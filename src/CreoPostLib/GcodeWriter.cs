@@ -27,7 +27,7 @@ namespace CreoPost
                 if (RawLine.Length > 0)
                     RawLine += " ";
 
-                while (indentCmt && RawLine.Length < 40)
+                while (indentCmt && RawLine.Length < 60)
                     RawLine += " ";
 
                 RawLine += "(" + cmt + ")";

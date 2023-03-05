@@ -25,7 +25,6 @@ namespace CreoPost
         public bool SpindleOn = false;
         public double SpindleRpm = 0.0;
 
-
         public bool NctToGcode(NclReader ncl, GcodeWriter gcode)
         {
             // over all NCL instructions
@@ -136,17 +135,17 @@ namespace CreoPost
                     nclIndex++;
                 }
 
-                if (ncli is NclItemCycleDeep cycleDeep)
+                if (ncli is NclItemCycleBase cycleBase)
                 {
                     // first check, if assumptions concerning command sequence are met ..
-                    var gotoIndex = new List<int>();
+                    var gotoSeq = new List<NclItemGoto>();
                     int offIndex = -1;
                     bool err2 = false;
                     int j = nclIndex + 1;
                     while (j < ncl.Lines.Count)
                     {
-                        if (ncl.Lines[j] is NclItemGoto)
-                            gotoIndex.Add(j);
+                        if (ncl.Lines[j] is NclItemGoto gs)
+                            gotoSeq.Add(gs);
                         else if (ncl.Lines[j] is NclItemCycleOff)
                         {
                             offIndex = j;
@@ -160,65 +159,154 @@ namespace CreoPost
                     // still ok?
                     if (offIndex == -1 || err2)
                     {
-                        Log?.Invoke(LogLevel.Error, $"Line ({cycleDeep.LineNo}) : CYCLE / DEEP command parsed incorrect. Aborting prossing!");
+                        Log?.Invoke(LogLevel.Error, $"Line ({cycleBase.LineNo}) : CYCLE / * command parsed incorrect. Aborting prossing!");
                         return false;
                     }
 
                     // advance index
                     nclIndex = offIndex + 1;
 
-                    // get some argument values
-                    var deepDepth = cycleDeep.Args?.GetNamedValue("DEPTH");
-                    var deepStep = cycleDeep.Args?.GetNamedValue("STEP");
-                    var deepMmpm = cycleDeep.Args?.GetNamedValue("MMPM");
-                    var deepClear = cycleDeep.Args?.GetNamedValue("CLEAR");
-                    if (deepDepth == null || deepStep == null || deepMmpm == null || deepClear == null)
+                    // now differentiate
+                    var res = false;
+
+                    if (cycleBase is NclItemCycleDrill cycleDrill)
+                        res = SubCommandCycleDrill(ncl, gcode, cycleDrill, gotoSeq);
+
+                    if (cycleBase is NclItemCycleDeep cycleDeep)
+                        res = SubCommandCycleDeep(ncl, gcode, cycleDeep, gotoSeq);
+
+                    if (!res)
                     {
-                        Log?.Invoke(LogLevel.Error, $"Line ({cycleDeep.LineNo}) : CYCLE / DEEP command missing some arguments DEPTH, STEP, MMPM, CLEAR. Aborting prossing!");
+                        Log?.Invoke(LogLevel.Error, $"Line ({cycleBase.LineNo}) : CYCLE / * command was not executed corrently. Aborting prossing!");
                         return false;
                     }
-
-                    // now perform process for each goto command
-                    foreach (var gi in gotoIndex)
-                        if (ncl.Lines[gi] is NclItemGoto goPos)
-                        {
-                            // have the arguments of cycleDeep and goPos
-                            // see: http://bdml.stanford.edu/twiki/pub/Manufacturing/HaasReferenceInfo/V61_GPost_CD_Manual.pdf
-                            // pp. 95
-                            // for GRBL operation, also this might be interesting for setting G0 speed
-                            // see: https://diymachining.com/grbl-feed-rate/
-
-                            // go rapid to safe position
-                            gcode.Add(new GcodeItemMoveRapidG0(
-                                x: goPos.X, y: goPos.Y, z: deepClear.Value, comment: "new cycle deep: go to clearance depth"));
-
-                            // until deep. Deepening vector direction (Z) is going negative!!
-                            var deepZ = goPos.Z - deepStep.Value;
-                            while (deepZ > goPos.Z - ( deepDepth.Value + deepStep.Value) )
-                            {
-                                // avoid deepZ to be LESS than desired depth
-                                var workZ = Math.Max(deepZ, goPos.Z - deepDepth.Value);
-
-                                // feed SLOWLY to this depth
-                                gcode.Add(new GcodeItemMoveLinearG1(
-                                    x: goPos.X, y: goPos.Y, z: workZ, 
-                                    feedRate: deepMmpm.Value,
-                                    comment: "go slowly to step depth"));
-
-                                // retract FAST completely
-                                gcode.Add(new GcodeItemMoveRapidG0(
-                                    // x: goPos.X, y: goPos.Y, 
-                                    z: deepClear,
-                                    comment: "retract"));
-
-                                // now take a step
-                                deepZ -= deepStep.Value;
-                            }
-                        }
                 }
             }
 
             // looks good
+            return true;
+        }
+
+        protected bool SubCommandCycleDrill(
+            NclReader ncl,
+            GcodeWriter gcode,
+            NclItemCycleDrill cycleDeep,
+            List<NclItemGoto> gotoSeq)
+        {
+            // access
+            if (cycleDeep == null)
+                return false;
+
+            // get some argument values
+            var deepDepth = cycleDeep.Args?.GetNamedValue("DEPTH");
+            var deepMmpm = cycleDeep.Args?.GetNamedValue("MMPM");
+            var deepClear = cycleDeep.Args?.GetNamedValue("CLEAR");
+            if (deepDepth == null || deepMmpm == null || deepClear == null)
+            {
+                Log?.Invoke(LogLevel.Error, $"Line ({cycleDeep.LineNo}) : CYCLE / DRILL command missing some arguments DEPTH, MMPM, CLEAR. Aborting prossing!");
+                return false;
+            }
+
+            // now perform process for each goto command
+            foreach (var goPos in gotoSeq)
+            {
+                // have the arguments of cycleDeep and goPos
+                // see: http://bdml.stanford.edu/twiki/pub/Manufacturing/HaasReferenceInfo/V61_GPost_CD_Manual.pdf
+                // pp. 98
+                // for GRBL operation, also this might be interesting for setting G0 speed
+                // see: https://diymachining.com/grbl-feed-rate/
+
+                // go deep. Deepening vector direction (Z) is going negative!!
+                var workZ = goPos.Z - deepDepth.Value;
+
+                // some info in gcode
+                gcode.AddComment($"Software-based drilling in one pass");
+                gcode.AddComment(FormattableString.Invariant($"Target position: {goPos.X:0.000}, {goPos.Y:0.000}, {workZ:0.000}"));
+
+                // go rapid to safe position
+                gcode.Add(new GcodeItemMoveRapidG0(
+                    x: goPos.X, y: goPos.Y, z: deepClear.Value, comment: "new cycle deep: go to clearance depth"));
+
+                // feed SLOWLY to this depth
+                gcode.Add(new GcodeItemMoveLinearG1(
+                    x: goPos.X, y: goPos.Y, z: workZ,
+                    feedRate: deepMmpm.Value,
+                    comment: "go slowly in one pass to drill depth"));
+
+                // retract FAST completely
+                gcode.Add(new GcodeItemMoveRapidG0(
+                    z: deepClear,
+                    comment: "retract"));
+            }
+
+            // ok
+            return true;
+        }
+
+        protected bool SubCommandCycleDeep(
+            NclReader ncl,
+            GcodeWriter gcode,
+            NclItemCycleDeep cycleDeep,
+            List<NclItemGoto> gotoSeq)
+        {
+            // access
+            if (cycleDeep == null)
+                return false;
+
+            // get some argument values
+            var deepDepth = cycleDeep.Args?.GetNamedValue("DEPTH");
+            var deepStep = cycleDeep.Args?.GetNamedValue("STEP");
+            var deepMmpm = cycleDeep.Args?.GetNamedValue("MMPM");
+            var deepClear = cycleDeep.Args?.GetNamedValue("CLEAR");
+            if (deepDepth == null || deepStep == null || deepMmpm == null || deepClear == null)
+            {
+                Log?.Invoke(LogLevel.Error, $"Line ({cycleDeep.LineNo}) : CYCLE / DEEP command missing some arguments DEPTH, STEP, MMPM, CLEAR. Aborting prossing!");
+                return false;
+            }
+
+            // now perform process for each goto command
+            foreach (var goPos in gotoSeq)
+            {
+                // have the arguments of cycleDeep and goPos
+                // see: http://bdml.stanford.edu/twiki/pub/Manufacturing/HaasReferenceInfo/V61_GPost_CD_Manual.pdf
+                // pp. 95
+                // for GRBL operation, also this might be interesting for setting G0 speed
+                // see: https://diymachining.com/grbl-feed-rate/
+
+                // Deep drilling. Deepening vector direction (Z) is going negative!!
+                var deepZ = goPos.Z - deepStep.Value;
+
+                // some info in gcode
+                gcode.AddComment($"Software-based deep drilling");
+                gcode.AddComment(FormattableString.Invariant($"Target position: {goPos.X:0.000}, {goPos.Y:0.000}, {deepZ:0.000}"));
+
+                // go rapid to safe position
+                gcode.Add(new GcodeItemMoveRapidG0(
+                    x: goPos.X, y: goPos.Y, z: deepClear.Value, comment: "new cycle deep: go to clearance depth"));
+
+                // loop
+                while (deepZ > goPos.Z - (deepDepth.Value + deepStep.Value))
+                {
+                    // avoid deepZ to be LESS than desired depth
+                    var workZ = Math.Max(deepZ, goPos.Z - deepDepth.Value);
+
+                    // feed SLOWLY to this depth
+                    gcode.Add(new GcodeItemMoveLinearG1(
+                        x: goPos.X, y: goPos.Y, z: workZ,
+                        feedRate: deepMmpm.Value,
+                        comment: "go slowly to step depth"));
+
+                    // retract FAST completely
+                    gcode.Add(new GcodeItemMoveRapidG0(
+                        z: deepClear,
+                        comment: "retract"));
+
+                    // now take a step
+                    deepZ -= deepStep.Value;
+                }
+            }
+
+            // ok
             return true;
         }
     }

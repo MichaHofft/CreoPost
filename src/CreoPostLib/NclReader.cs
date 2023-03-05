@@ -98,11 +98,25 @@ namespace CreoPost
     }
 
     /// <summary>
-    /// Complex command including a lot of sub-movements.
+    /// Base class for CYCLE command.
     /// </summary>
-    public class NclItemCycleDeep : NclItemBase
+    public class NclItemCycleBase : NclItemBase
     {
         public NclArgValueList Args = new NclArgValueList();
+    }
+
+    /// <summary>
+    /// Drilling command with one pass.
+    /// </summary>
+    public class NclItemCycleDrill : NclItemCycleBase
+    {
+    }
+
+    /// <summary>
+    /// Complex deep drilling command including a lot of sub-movements.
+    /// </summary>
+    public class NclItemCycleDeep : NclItemCycleBase
+    {
     }
 
     /// <summary>
@@ -380,6 +394,17 @@ namespace CreoPost
                     {
                         FeedRate = f,
                         Unit = ParseUnit(m.Groups[2].ToString().Trim())
+                    };
+                    found = true;
+                }
+
+            m = Regex.Match(ln, @"^CYCLE\s*/\s*DRILL\s*,\s*(.+)");
+            if (!found && m.Success)
+                if ((new NclArgValueList().Parse(m.Groups[1].ToString())) is NclArgValueList alist)
+                {
+                    item = new NclItemCycleDrill()
+                    {
+                        Args = alist
                     };
                     found = true;
                 }
