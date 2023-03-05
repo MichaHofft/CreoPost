@@ -107,28 +107,59 @@ namespace CreoPost
                     // update target
                     CurrPos = (new Vector.Pos3()).Add(circle.X, circle.Y, circle.Z);
 
-                    // use the R variant
-                    if (clw.Value)
+                    if (false)
                     {
-                        gcode.Add(new GcodeItemArcClockwise()
+                        // use the R variant
+                        if (clw.Value)
                         {
-                            X = go2.X,
-                            Y = go2.Y,
-                            Z = go2.Z,
-                            R = circle.R,
-                            Feedrate = CurrFeedRate
-                        });
+                            gcode.Add(new GcodeItemArcClockwise()
+                            {
+                                X = go2.X,
+                                Y = go2.Y,
+                                Z = go2.Z,
+                                R = circle.R,
+                                Feedrate = CurrFeedRate
+                            });
+                        }
+                        else
+                        {
+                            gcode.Add(new GcodeItemArcAntiClockwise()
+                            {
+                                X = go2.X,
+                                Y = go2.Y,
+                                Z = go2.Z,
+                                R = circle.R,
+                                Feedrate = CurrFeedRate
+                            });
+                        }
                     }
                     else
                     {
-                        gcode.Add(new GcodeItemArcAntiClockwise()
+                        // use the IJ variant
+                        if (clw.Value)
                         {
-                            X = go2.X,
-                            Y = go2.Y,
-                            Z = go2.Z,
-                            R = circle.R,
-                            Feedrate = CurrFeedRate
-                        });
+                            gcode.Add(new GcodeItemArcClockwise()
+                            {
+                                X = go2.X,
+                                Y = go2.Y,
+                                Z = go2.Z,
+                                I = circle.X - go2.X,
+                                J = circle.Y - go2.Y,
+                                Feedrate = CurrFeedRate
+                            });
+                        }
+                        else
+                        {
+                            gcode.Add(new GcodeItemArcAntiClockwise()
+                            {
+                                X = go2.X,
+                                Y = go2.Y,
+                                Z = go2.Z,
+                                I = circle.X - go2.X,
+                                J = circle.Y - go2.Y,
+                                Feedrate = CurrFeedRate
+                            });
+                        }
                     }
 
                     // skip GOTO

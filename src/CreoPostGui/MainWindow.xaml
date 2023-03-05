@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CreoPostGui"
         mc:Ignorable="d"
-        Title="CreoPost" Height="450" Width="800">
+        Title="CreoPost" Height="450" Width="800"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
     
     <!--
     Color: https://coolors.co/palette/f72585-b5179e-7209b7-560bad-480ca8-3a0ca3-3f37c9-4361ee-4895ef-4cc9f0
@@ -168,18 +170,21 @@
 
                 <WrapPanel Grid.Row="3" Grid.Column="0">
                     <CheckBox x:Name="CheckBoxInputAutoUpdateFile"
+                        VerticalContentAlignment="Center"
                         Margin="0, 2, 10, 2"                
                         Content="auto update file"
                         IsChecked="true"
                         Checked="CheckBox_Checked"
                         Unchecked="CheckBox_Checked"/>
                     <CheckBox x:Name="CheckBoxInputAutoUpdateDir"
+                        VerticalContentAlignment="Center"
                         Margin="0, 2, 10, 2"
                         Content="auto load from same directory"
                         IsChecked="false"
                         Checked="CheckBox_Checked"
                         Unchecked="CheckBox_Checked"/>
                     <CheckBox x:Name="CheckBoxInputAutoTransform"
+                        VerticalContentAlignment="Center"
                         Margin="0, 2, 10, 2"
                         Content="auto transform"
                         IsChecked="false" />
@@ -187,14 +192,29 @@
 
                 <WrapPanel Grid.Row="3" Grid.Column="2">
                     <CheckBox x:Name="CheckBoxOutputAutoAdaptFn"
+                        VerticalContentAlignment="Center"
                         Margin="0, 2, 10, 2"                
                         Content="auto adapt filename"
                         IsChecked="true"/>
 
                     <CheckBox x:Name="CheckBoxOutputAutoSave"
+                        VerticalContentAlignment="Center"
                         Margin="0, 2, 10, 2"                
                         Content="auto save"
                         IsChecked="false"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="CheckBoxOutputAutoPasteBin"
+                            VerticalContentAlignment="Center"
+                            Margin="0, 2, 6, 2"                
+                            Content="auto PasteBin ="
+                            IsChecked="false"/>
+
+                        <TextBox x:Name="TextBoxPasteBinId"
+                            Width="100"
+                            Margin="0, 2, 10, 2" />
+                    </StackPanel>
+                    
                 </WrapPanel>
 
             </Grid>

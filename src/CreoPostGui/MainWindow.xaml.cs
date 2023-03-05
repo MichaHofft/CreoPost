@@ -24,16 +24,16 @@ namespace CreoPostGui
     /// </summary>
     public partial class MainWindow : Window
     {
+        // start with default options
+        protected Options _options = new Options();
+
         protected FileSystemWatcher? _inputWatcher = null;
 
         protected string _outputText = "";
 
         public MainWindow()
         {
-            InitializeComponent();
-            TextBoxLog.Document.Blocks.Clear();
-            Log(LogLevel.Info, Options.PrgVersionAndCredits);
-            Log(LogLevel.Info, "Application started.");
+            InitializeComponent();            
         }
 
         private async Task UiLoadInputAsync(string fn)
@@ -463,6 +463,87 @@ namespace CreoPostGui
         private void DragSource_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             dragStartPoint = e.GetPosition(null);
+        }
+
+        #endregion
+
+        //--------------------------------------------------------------------------------------------
+        #region Options handling
+
+        protected void OptionsToUi(Options opt)
+        {
+            CheckBoxInputAutoUpdateFile.IsChecked = opt.AutoUpdateFile;
+            CheckBoxInputAutoUpdateDir.IsChecked = opt.AutoLoadFromSameDir;
+            CheckBoxInputAutoTransform.IsChecked = opt.AutoTransform;
+            CheckBoxOutputAutoAdaptFn.IsChecked = opt.AutoAdaptFilename;
+            CheckBoxOutputAutoSave.IsChecked = opt.AutoSave;
+            CheckBoxOutputAutoPasteBin.IsChecked = opt.AutoPasteBin;
+            TextBoxPasteBinId.Text = opt.PasteBinId;
+        }
+
+        protected void OptionsFromUi(Options opt)
+        {
+            opt.AutoUpdateFile = CheckBoxInputAutoUpdateFile.IsChecked == true ;
+            opt.AutoLoadFromSameDir = CheckBoxInputAutoUpdateDir.IsChecked == true ;
+            opt.AutoTransform = CheckBoxInputAutoTransform.IsChecked == true ;
+            opt.AutoAdaptFilename = CheckBoxOutputAutoAdaptFn.IsChecked == true ;
+            opt.AutoSave = CheckBoxOutputAutoSave.IsChecked == true ;
+            opt.AutoPasteBin = CheckBoxOutputAutoPasteBin.IsChecked == true;
+            opt.PasteBinId = TextBoxPasteBinId.Text;
+        }
+
+        #endregion
+
+        //--------------------------------------------------------------------------------------------
+        #region Window Loaded and Exit
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // final preparation
+            TextBoxLog.Document.Blocks.Clear();
+            Log(LogLevel.Info, Options.PrgVersionAndCredits);
+            Log(LogLevel.Info, "Application started.");
+
+            // try load options
+            var optFn = Options.GetDefaultOptionsFn();
+            Options? optNew = null;
+            Log(LogLevel.Info, "Try load options from: {0} ...", optFn);
+            try
+            {
+                optNew = Options.LoadFromFile(optFn);
+                if (optNew != null)
+                {
+                    _options = optNew;
+                    Log(LogLevel.Info, ".. options successfully loaded.");
+                }
+            } 
+            catch (Exception ex)
+            {
+                Log(LogLevel.Error, ".. exception while loading options: {0}", ex.Message);
+            }
+
+            // set actual options
+            OptionsToUi(_options);
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // try save options
+            var optFn = Options.GetDefaultOptionsFn();
+            Log(LogLevel.Info, "Try save options to: {0} ...", optFn);
+            try
+            {
+                OptionsFromUi(_options);
+                Options.SaveFile(optFn, _options);
+                Log(LogLevel.Info, ".. options successfully saved.");
+            }
+            catch (Exception ex)
+            {
+                Log(LogLevel.Error, ".. exception while saving options: {0}", ex.Message);
+            }
+
+            // let close
+            e.Cancel = false;
         }
 
         #endregion
