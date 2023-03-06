@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CreoPostGui"
         mc:Ignorable="d"
-        Title="CreoPost" Height="450" Width="800"
+        Title="CreoPost" Height="600" Width="1024"
         Loaded="Window_Loaded"
         Closing="Window_Closing">
     
@@ -53,9 +53,9 @@
                 </Grid.RowDefinitions>
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="5"/>
-                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="3*"/>
                 </Grid.ColumnDefinitions>
 
                 <GridSplitter 
@@ -157,6 +157,7 @@
                     AcceptsReturn="True"
                     AcceptsTab="True"
                     Margin="1"
+                    FontFamily="Consolas"
                     HorizontalScrollBarVisibility="Visible"
                     VerticalScrollBarVisibility="Visible"
                     Background="#48bfe3"/>
@@ -175,6 +176,7 @@
                     AcceptsReturn="True"
                     AcceptsTab="True"
                     Margin="1"
+                    FontFamily="Consolas"
                     HorizontalScrollBarVisibility="Visible"
                     VerticalScrollBarVisibility="Visible"
                     Background="#64dfdf" />

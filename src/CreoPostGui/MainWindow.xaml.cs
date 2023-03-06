@@ -73,7 +73,7 @@ namespace CreoPostGui
             }
         }
 
-        private void UiTransform()
+        private async Task UiTransform()
         {
             // safe way
             try
@@ -99,6 +99,13 @@ namespace CreoPostGui
 
                 // create G-Code
                 var gcode = new GcodeWriter();
+
+                // leave watermak
+                //
+
+                gcode.AddComment("File created by: " + Options.PrgVersionAndCredits);
+                gcode.AddComment("File translated from" 
+                    + System.IO.Path.GetFileName(TextBoxInputFn.Text));
 
                 // add header
                 GcodeTemplates.AddHeaderLikeFreeCadGrbl(gcode);
@@ -145,6 +152,17 @@ namespace CreoPostGui
                 {
                     System.IO.File.WriteAllText(TextBoxOutputFn.Text, TextBoxOutputContent.Text);
                     Log(LogLevel.Info, "Output content saved to: {0}", TextBoxOutputFn.Text);
+                }
+
+                // aut paste bin
+                if (CheckBoxOutputAutoPasteBin.IsChecked == true)
+                {
+                    await TryPasteBin(
+                        _options,
+                        searchTitle: TextBoxPasteBinTitle.Text,
+                        code: TextBoxOutputContent.Text,
+                        useProxy: CheckBoxOutputUseProxy.IsChecked == true,
+                        outFn: System.IO.Path.GetFileName(TextBoxOutputFn.Text));
                 }
             }
             catch (Exception ex)
@@ -264,7 +282,7 @@ namespace CreoPostGui
 
                     await UiLoadInputAsync(e.FullPath);
                     if (CheckBoxInputAutoTransform.IsChecked == true)
-                        UiTransform();
+                        await UiTransform();
 
                     // place holder
                     await Task.Yield();
@@ -312,7 +330,8 @@ namespace CreoPostGui
                     _options, 
                     searchTitle: TextBoxPasteBinTitle.Text,
                     code: TextBoxOutputContent.Text,
-                    useProxy: CheckBoxOutputUseProxy.IsChecked == true);
+                    useProxy: CheckBoxOutputUseProxy.IsChecked == true,
+                    outFn: System.IO.Path.GetFileName(TextBoxOutputFn.Text));
             }
 
             if (sender == ButtonOutputSave)
@@ -341,7 +360,7 @@ namespace CreoPostGui
 
             if (sender == ButtonTransform)
             {
-                UiTransform();
+                await UiTransform();
             }
         }
 
@@ -407,6 +426,7 @@ namespace CreoPostGui
                         {
                             await UiLoadInputAsync(fn);
                             UpdateInputWatcher();
+                            await UiTransform();
                         }
                     }
                     catch (Exception ex)
@@ -563,7 +583,7 @@ namespace CreoPostGui
             if (TextBoxInputFn.Text.Trim() != "")
             {
                 await UiLoadInputAsync(TextBoxInputFn.Text);
-                UiTransform();
+                await UiTransform();
             }
         }
 
@@ -592,7 +612,8 @@ namespace CreoPostGui
         //--------------------------------------------------------------------------------------------
         #region Paste Bin
 
-        public async Task TryPasteBin(Options options, string searchTitle, string code, bool useProxy)
+        public async Task TryPasteBin(
+            Options options, string searchTitle, string code, bool useProxy, string? outFn = null)
         {
             // see: https://github.com/nikibobi/pastebin-csharp
 
@@ -647,6 +668,12 @@ namespace CreoPostGui
                     {
                         await me.DeletePasteAsync(paste);
                     }
+                }
+
+                // prepare code with filename
+                if (outFn != null && outFn != "")
+                {
+                    code = $"%%FN={outFn}%%" + code;
                 }
 
                 // ok, add new

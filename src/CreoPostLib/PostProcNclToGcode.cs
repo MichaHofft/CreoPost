@@ -25,6 +25,11 @@ namespace CreoPost
         public bool SpindleOn = false;
         public double SpindleRpm = 0.0;
 
+        protected void AddSourceReference(GcodeWriter gcode, NclItemBase ncli, string operation)
+        {
+            gcode.AddComment($"source({ncli.LineNo}) {operation}");
+        }
+
         public bool NctToGcode(NclReader ncl, GcodeWriter gcode)
         {
             // over all NCL instructions
@@ -32,9 +37,12 @@ namespace CreoPost
             {
                 // access and look-ahead
                 var ncli = ncl.Lines[nclIndex];
-                NclItemBase ncliNext = null;
+                NclItemBase? ncliNext = null;
                 if (nclIndex < ncl.Lines.Count - 1)
                     ncliNext = ncl.Lines[nclIndex + 1];
+                NclItemBase? ncliLast = null;
+                if (nclIndex > 1)
+                    ncliLast = ncl.Lines[nclIndex - 1];
 
                 // what item?
                 if (ncli is NclItemSpindleRpm sprpm)
@@ -65,6 +73,11 @@ namespace CreoPost
 
                 if (ncli is NclItemGoto go)
                 {
+                    // help with reference, only when not to many ..
+                    if (!(ncliLast is NclItemGoto))
+                        AddSourceReference(gcode, go, "GOTO");
+
+                    // get position
                     CurrPos = (new Vector.Pos3()).Add(go.X, go.Y, go.Z);
 
                     // need to disting between G0 and G1
@@ -82,6 +95,9 @@ namespace CreoPost
 
                 if (ncli is NclItemCircle circle)
                 {
+                    // help with reference
+                    AddSourceReference(gcode, circle, "CIRCLE");
+
                     // the spec (?) demands, that CIRCLE is followed by a GOTO
                     var go2 = ncliNext as NclItemGoto;
                     if (go2 == null)
@@ -201,10 +217,16 @@ namespace CreoPost
                     var res = false;
 
                     if (cycleBase is NclItemCycleDrill cycleDrill)
+                    {
+                        AddSourceReference(gcode, cycleBase, "CYCLE DRILL");
                         res = SubCommandCycleDrill(ncl, gcode, cycleDrill, gotoSeq);
+                    }
 
                     if (cycleBase is NclItemCycleDeep cycleDeep)
+                    {
+                        AddSourceReference(gcode, cycleBase, "CYCLE DEEP");
                         res = SubCommandCycleDeep(ncl, gcode, cycleDeep, gotoSeq);
+                    }
 
                     if (!res)
                     {

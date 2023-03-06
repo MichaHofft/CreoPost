@@ -28,18 +28,10 @@ namespace CreoPost
             writer.AddComment("begin preamble");
             writer.AddGeneric("G17 G90", "Arcs in the XY plane. Absolute values.");
             writer.AddGeneric("G21", "Values in mm");
-            writer.AddComment("begin operation: Default Tool");
-            writer.AddComment("Path: Default Tool");
             writer.AddComment("Default Tool");
             writer.AddComment("begin toolchange");
             writer.AddGeneric("(M6 T1.0)", "Toolchange with n=1..128");
             writer.Add(new GcodeItemSpindleRpmM3(9999, "Turn on spindle with specific RPM"));
-            writer.AddComment("finish operation: Default Tool");
-            writer.AddComment("begin operation: Drilling");
-            writer.AddComment("Path: Drilling");
-            writer.AddComment("Drilling");
-            writer.AddComment("Begin Drilling");
-            writer.AddComment("Drilling example: G83 X10.000 Y2.500 Z - 11.000 F30.00 Q2.000 R2.000");
         }
 
         // <summary>
