@@ -20,6 +20,10 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Shell;
 
+// Notes
+// publish: https://learn.microsoft.com/en-us/dotnet/core/deploying/single-file/overview?tabs=cli
+// GH: https://docs.github.com/de/repositories/releasing-projects-on-github/managing-releases-in-a-repository
+
 namespace CreoPostGui
 {
     /// <summary>
